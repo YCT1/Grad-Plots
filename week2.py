@@ -1,3 +1,4 @@
+from turtle import pd
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
@@ -5,6 +6,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.datasets import make_blobs
 import pickle
+import pandas as pd
 def main():
     st.header("Simulated Data Analysis")
     
@@ -56,13 +58,45 @@ def main():
     st.plotly_chart(fig5, use_container_width=True)
 
 
-def main2():
-    st.header("Aligment Analysis")
+def main2(id, exp,fold):
+    
+    # Read from file
 
+    st.subheader(f"Example {exp}")
+    filehandler = open(f"Layer Results/Fold{fold}/id_{id}.obj", 'rb') 
+    data = pickle.load(filehandler)
+    filehandler.close()
+
+    output, target, before = data
+    output = output.detach().cpu().numpy()
+    
+    output_pd = pd.DataFrame( dict(Output=output.flatten()) )
+    fig1 = px.histogram(output_pd,x="Output", color_discrete_sequence=['blue'],nbins=20,opacity=0.5, labels=["test"])
+
+    before_pd = pd.DataFrame( dict(Before=before.flatten()) )
+    fig2 = px.histogram(before_pd,x="Before" , color_discrete_sequence=['red'],nbins=20, opacity=0.5)
+
+    target_pd = pd.DataFrame( dict(Target=target.flatten()) )
+    fig3 = px.histogram(target_pd,x="Target" , color_discrete_sequence=['green'],nbins=20, opacity=0.5)
+
+    fig = go.Figure(data=fig2.data + fig1.data + fig3.data)
+    
+    st.plotly_chart(fig, use_container_width=True)
+
+    fig1 = px.scatter(x=before.flatten(), y=target.flatten(),color_discrete_sequence=['blue'])
+    fig2 = px.scatter(x=output.flatten(), y=target.flatten(),color_discrete_sequence=['green'])
+
+    fig = go.Figure(fig1.data + fig2.data)
+    st.plotly_chart(fig, use_container_width=True)
     pass
 
 if __name__ == '__main__':
     st.title("Week 2 - Yekta Can Tursun")
     main()
-    main2()
+
+    st.header("Aligment Analysis")
+    main2(1,1,1)
+    main2(1,2,2)
+
+
     pass
