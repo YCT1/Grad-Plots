@@ -1,4 +1,4 @@
-from turtle import pd
+from matplotlib.pyplot import title
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
@@ -90,6 +90,71 @@ def main2(id, exp,fold):
     st.plotly_chart(fig, use_container_width=True)
     pass
 
+
+
+def readHospital(name, h):
+    address = f"Results/{name}_fold{1}/"
+    h1_fold1 = pd.read_csv(address + f"h_{h}.csv", header=None)
+
+    address = f"Results/{name}_fold{2}/"
+    h1_fold2 = pd.read_csv(address + f"h_{h}.csv", header=None)
+
+    h1 = pd.concat((h1_fold1,h1_fold2))
+    return h1
+
+def readHospital(names, h):
+    result = pd.DataFrame()
+    for name in names:
+        address = f"Results/{name}_fold{1}/"
+        h1_fold1 = pd.read_csv(address + f"h_{h}.csv", header=None)
+
+        address = f"Results/{name}_fold{2}/"
+        h1_fold2 = pd.read_csv(address + f"h_{h}.csv", header=None)
+
+        h1 = pd.concat((h1_fold1,h1_fold2))
+        result = pd.concat((result,h1))
+    return result
+
+def readAllHospital(name):
+    result = []
+    for i in range(1,4):
+        result.append(readHospital(name,i))
+    return result
+
+def main3():
+    showData = st.checkbox("Show Data")
+    experiment_names = ["Almanak1","Almanak2","Bursa3","Bursa4"]
+
+    h1 = readHospital(experiment_names, 1)
+    h2 = readHospital(experiment_names, 1)
+    h3 = readHospital(experiment_names, 1)
+
+    text = []
+    keys = ["Local","FedL", "FedL with Aligment", "Fed with Aligment All layer"]
+    for i in range(4):
+        for k in range(200):
+            text.append(keys[i])
+
+            pass
+
+    
+    fig = go.Figure()
+    if showData:
+        fig.add_trace(go.Box(x=text, y=h1[0],name="Hospital 1", boxpoints='all'))
+        fig.add_trace(go.Box(x=text, y=h2[0],name="Hospital 2",boxpoints='all'))
+        fig.add_trace(go.Box(x=text, y=h3[0],name="Hospital 3 OOD",boxpoints='all'))
+    else:
+        fig.add_trace(go.Box(x=text, y=h1[0],name="Hospital 1"))
+        fig.add_trace(go.Box(x=text, y=h2[0],name="Hospital 2"))
+        fig.add_trace(go.Box(x=text, y=h3[0],name="Hospital 3 OOD"))
+    
+    fig.update_layout(
+    yaxis_title='MAE',
+    boxmode='group' # group together boxes of the different traces for each value of x
+        )
+    st.plotly_chart(fig, use_container_width=True)
+    pass
+
 if __name__ == '__main__':
     st.title("Week 2 - Yekta Can Tursun")
     main()
@@ -98,5 +163,8 @@ if __name__ == '__main__':
     main2(1,1,1)
     main2(1,2,2)
 
+
+    st.header("Results")
+    main3()
 
     pass
